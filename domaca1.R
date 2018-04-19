@@ -14,7 +14,7 @@ myData2$Y <- as.factor(myData2$Y)
 podatki <- merge(myData, myData2, by = "indeks")
 View(podatki)
 
-#èe pogledam podatke, vidim, da so težave v stolpcih X1, X3 in Y (manjkajoèe vrednosti, -), "", ...)
+#ce pogledam podatke, vidim, da so tezave v stolpcih X1, X3 in Y (manjkajoce vrednosti, -), "", ...)
 str(podatki)
 lapply(podatki, typeof)
 podatki$X1 <- as.numeric(as.character(podatki$X1))
@@ -45,10 +45,11 @@ F_beta <- function(data, levels, ...) {
 #####KNN MODEL
 cvtc <- trainControl(method='cv', number=10, savePredictions = TRUE, summaryFunction = F_beta)
 knnModel <- train(Y~., data=podatki, method='knn', metric = 'F_beta', tuneGrid=data.frame(k=1:100), 
-                                                                                      trControl=cvtc)
+                  trControl=cvtc)
 
 #najboljsi model je pri k=7, F_2 je za ta model priblizno 0.65
-#zakaj dobim vsakic, ko pozenem train knnModel, razlicen odgovor za optimalen k?
+#zakaj dobim vsakic, ko pozenem train knnModel, razlicen odgovor za optimalen k? 
+#verjetno posledica precnega preverjanja...
 
 #####LOGISTICNA REGRESIJA
 
@@ -58,12 +59,12 @@ logitModel <- train(Y~., data=podatki, method='glm', trControl=cvtc)
 
 #kopirano iz vaje 3.1
 cvtc <- trainControl(method='cv', index = createFolds(podatki$Y, k=10, returnTrain=TRUE), 
-                                                                            summaryFunction = F_beta)
+                     summaryFunction = F_beta)
 errors <- data.frame(deg=1:3, err=rep(-1,3), sd=rep(-1,3))
 for(k in 1:3){
   tmpData <- data.frame(poly(as.matrix(podatki[, 1:6]), degree=k, raw=TRUE), Y=podatki$Y)
   tmpModel <- train(Y~., data=tmpData, method='glm', trControl=cvtc)
-  # Shranimo izraèunane napake
+  # Shranimo izraeunane napake
   errors$err[k] <- tmpModel$results$F_beta
   errors$sd[k] <- tmpModel$results$F_betaSD
 }
@@ -110,3 +111,4 @@ final <- data.frame(indeks=1001:2000, napoved=testni$pred)
 View(final)
 
 write.table(final, file = "testni_razredi.csv",row.names = FALSE, col.names = FALSE, sep = ',', quote = FALSE)
+
