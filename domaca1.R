@@ -53,9 +53,6 @@ knnModel <- train(Y~., data=podatki, method='knn', metric = 'F_beta', tuneGrid=d
 
 #####LOGISTICNA REGRESIJA
 
-cvtc <- trainControl(method='cv', index = createFolds(podatki$Y, k=10, returnTrain=TRUE), 
-                     summaryFunction = F_beta)
-logitModel <- train(Y~., data=podatki, method='glm', trControl=cvtc)
 
 #kopirano iz vaje 3.1
 cvtc <- trainControl(method='cv', index = createFolds(podatki$Y, k=10, returnTrain=TRUE), 
@@ -64,7 +61,7 @@ errors <- data.frame(deg=1:3, err=rep(-1,3), sd=rep(-1,3))
 for(k in 1:3){
   tmpData <- data.frame(poly(as.matrix(podatki[, 1:6]), degree=k, raw=TRUE), Y=podatki$Y)
   tmpModel <- train(Y~., data=tmpData, method='glm', trControl=cvtc)
-  # Shranimo izraeunane napake
+  # Shranimo izraèunane napake
   errors$err[k] <- tmpModel$results$F_beta
   errors$sd[k] <- tmpModel$results$F_betaSD
 }
@@ -74,7 +71,7 @@ plot(errors$deg, errors$err, type='o', col='green')
 
 #najboljsi model je pri k=1 (torej brez clenov visjih redov), F_2 je za ta model priblizno 0.68
 
-
+logitModel <- train(Y~., data=podatki, method='glm', trControl=cvtc)
 
 #####RANDOM FOREST
 # https://machinelearningmastery.com/tune-machine-learning-algorithms-in-r/
@@ -82,11 +79,12 @@ plot(errors$deg, errors$err, type='o', col='green')
 cvtc <- trainControl(method='cv', index = createFolds(podatki$Y, k=10, returnTrain=TRUE), 
                      summaryFunction = F_beta)
 set.seed(seed)
-tunegrid <- expand.grid(.mtry=c(1:15))
+tunegrid <- expand.grid(.mtry=c(1:6)) #ker imamo 6 napovednih spremenljivk
 rfModel <- train(Y~., data=podatki, method="rf", metric='F_beta', tuneGrid=tunegrid, trControl=cvtc)
 plot(rfModel)
 
 #najboljsi model pri parametru mtry=1, F_beta priblizno 0.68
+#podobno kot pri kNN, razlicno izbira optimalni mtry ob razlicnih zagonih...
 
 
 #####UPORABA NAJBOLJSEGA MODELA NA TESTNIH PODATKIH
@@ -103,7 +101,7 @@ testni <- na.omit(testni)
 testni$indeks <- NULL
 
 #izvedemo napoved
-testni$pred <- predict(knnModel, testni)
+testni$pred <- predict(logitModel, testni)
 testni$pred <-ifelse(testni$pred==0, 'N','D')
 
 #zapis rezultatov na csv datoteko
